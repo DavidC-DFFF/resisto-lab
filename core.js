@@ -100,3 +100,20 @@ export function measurementDisplay(ohms) {
   if (ohms >= 1_000) return {value: ohms / 1_000, unit: 'kΩ'};
   return {value: ohms, unit: 'Ω'};
 }
+
+export function evaluateChallengeItems(challenge, submission) {
+  const nominal = approximatelyEqual(submission.nominal, challenge.nominal);
+  const low = approximatelyEqual(submission.low, challenge.low);
+  const high = approximatelyEqual(submission.high, challenge.high);
+  const meter = submission.blackPort === 'com'
+    && submission.redPort === 'vohm'
+    && submission.dial === 'ohm';
+
+  return {
+    nominal,
+    low,
+    high,
+    meter,
+    points: [nominal, low, high, meter].filter(Boolean).length
+  };
+}

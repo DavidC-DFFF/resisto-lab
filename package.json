@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "node server.mjs",
     "build": "npm test",
-    "test": "node core.test.mjs"
+    "test": "node core.test.mjs && node scorm.test.mjs",
+    "test:browser": "node browser.test.mjs",
+    "scorm:stage": "node scripts/build-scorm.mjs"
   }
 }

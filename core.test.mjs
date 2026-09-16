@@ -3,6 +3,7 @@ import {
   approximatelyEqual,
   createChallenge,
   decodeResistance,
+  evaluateChallengeItems,
   formatResistance,
   formatTolerance,
   measurementDisplay,
@@ -28,5 +29,23 @@ assert.equal(challenge.low, 9);
 assert.equal(challenge.high, 11);
 assert.equal(challenge.measurement, 9);
 assert.deepEqual(measurementDisplay(2_180), {value: 2.18, unit: 'kΩ'});
+
+assert.deepEqual(evaluateChallengeItems(challenge, {
+  nominal: 10,
+  low: 9,
+  high: 11,
+  blackPort: 'com',
+  redPort: 'vohm',
+  dial: 'ohm'
+}), {nominal: true, low: true, high: true, meter: true, points: 4});
+
+assert.deepEqual(evaluateChallengeItems(challenge, {
+  nominal: 10,
+  low: 8,
+  high: 11,
+  blackPort: 'com',
+  redPort: 'ma',
+  dial: 'ohm'
+}), {nominal: true, low: false, high: true, meter: false, points: 2});
 
 console.log('Tous les tests de RésistoLab sont réussis.');

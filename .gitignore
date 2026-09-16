@@ -1,3 +1,5 @@
 node_modules/
+dist-scorm/
+resistolab-defi-scorm.zip
 .DS_Store
 Thumbs.db
