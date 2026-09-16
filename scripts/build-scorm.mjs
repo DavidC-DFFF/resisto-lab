@@ -11,8 +11,7 @@ const files = [
   'styles.css',
   'app.js',
   'core.js',
-  'scorm.js',
-  'og.png'
+  'scorm.js'
 ];
 
 await rm(destination, {recursive: true, force: true});
