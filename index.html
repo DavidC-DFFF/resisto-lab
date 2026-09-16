@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="RésistoLab : entraînement interactif aux pourcentages, à la tolérance des résistances et à la mesure au multimètre.">
+  <meta name="theme-color" content="#10212d">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="RésistoLab — Pourcentages et tolérance">
+  <meta property="og:description" content="Décode une résistance, calcule son intervalle et prépare le multimètre virtuel.">
+  <meta property="og:image" content="https://davidc-dfff.github.io/resisto-lab/og.png">
+  <meta property="og:url" content="https://davidc-dfff.github.io/resisto-lab/">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="RésistoLab — Pourcentages et tolérance">
+  <meta name="twitter:description" content="Décode une résistance, calcule son intervalle et prépare le multimètre virtuel.">
+  <meta name="twitter:image" content="https://davidc-dfff.github.io/resisto-lab/og.png">
+  <link rel="canonical" href="https://davidc-dfff.github.io/resisto-lab/">
+  <title>RésistoLab — Pourcentages et tolérance</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#atelier" aria-label="RésistoLab, retour à l’atelier">
+      <span class="brand-mark" aria-hidden="true">Ω</span>
+      <span><strong>RésistoLab</strong><small>Pourcentages &amp; mesure</small></span>
+    </a>
+    <nav class="mode-switch" aria-label="Mode de travail">
+      <button class="mode-button active" type="button" data-mode="training">Entraînement</button>
+      <button class="mode-button" type="button" data-mode="competition">Défi</button>
+    </nav>
+    <div class="session-status" aria-live="polite">
+      <span id="series-badge">E12 · ±10 %</span>
+      <span id="score-badge">Essai libre</span>
+    </div>
+  </header>
+
+  <main id="atelier" class="app">
+    <section class="briefing" aria-labelledby="page-title">
+      <div>
+        <p class="eyebrow">Mission 01 · Contrôle avant montage</p>
+        <h1 id="page-title">Cette résistance est-elle prête à être mesurée&nbsp;?</h1>
+        <p>Décode les anneaux, calcule l’intervalle de tolérance, puis prépare correctement le multimètre.</p>
+      </div>
+      <div class="level-control">
+        <label for="level">Niveau</label>
+        <select id="level">
+          <option value="E12">E12 · tolérance 10 %</option>
+          <option value="E24">E24 · tolérance 5 %</option>
+        </select>
+        <button id="new-resistor" class="secondary" type="button">Nouvelle résistance</button>
+      </div>
+    </section>
+
+    <section class="resistor-card" aria-labelledby="resistor-title">
+      <div class="card-heading">
+        <div>
+          <p class="step-number">ÉTAPE 1</p>
+          <h2 id="resistor-title">Identifier la résistance</h2>
+        </div>
+        <p class="tolerance-label">Anneau de tolérance&nbsp;: <strong id="tolerance-name">argent</strong></p>
+      </div>
+      <div class="resistor-stage" role="img" aria-label="Résistance à décoder">
+        <span class="lead"></span>
+        <div class="resistor-body">
+          <span class="visual-band" id="band-1"></span>
+          <span class="visual-band" id="band-2"></span>
+          <span class="visual-band" id="band-3"></span>
+          <span class="visual-band tolerance" id="band-4"></span>
+        </div>
+        <span class="lead"></span>
+      </div>
+      <p class="sr-only" id="band-description"></p>
+    </section>
+
+    <section class="lab-grid">
+      <div class="calculation-card">
+        <div class="card-heading">
+          <div>
+            <p class="step-number">ÉTAPE 2</p>
+            <h2>Calculer l’intervalle</h2>
+          </div>
+          <button id="hint-button" class="text-button" type="button">Voir la méthode</button>
+        </div>
+        <div id="hint" class="hint" hidden>
+          <strong>Écart = R × t ÷ 100</strong>
+          <span>Borne basse = R − écart</span>
+          <span>Borne haute = R + écart</span>
+        </div>
+
+        <div class="inequality" aria-label="Inéquation à trois membres">
+          <label class="bound-field" id="low-field">
+            <span>Borne basse</span>
+            <span class="input-row">
+              <input id="low-value" type="text" inputmode="decimal" autocomplete="off" aria-describedby="low-feedback">
+              <select id="low-unit" aria-label="Unité de la borne basse">
+                <option value="ohm">Ω</option><option value="kohm">kΩ</option><option value="mohm">MΩ</option>
+              </select>
+            </span>
+            <small id="low-feedback">À calculer</small>
+          </label>
+          <span class="operator" aria-hidden="true">≤</span>
+
+          <div class="multimeter" aria-label="Multimètre virtuel">
+            <div class="meter-topline"><span>RÉSISTANCE</span><span id="meter-range">AUTO</span></div>
+            <output id="meter-display" class="meter-display" aria-live="polite">— — —</output>
+            <div class="dial-zone">
+              <label for="dial">Sélecteur</label>
+              <select id="dial">
+                <option value="off">OFF</option>
+                <option value="voltage">V</option>
+                <option value="current">A</option>
+                <option value="ohm">Ω</option>
+              </select>
+            </div>
+            <div class="ports">
+              <label>Fil noir<select id="black-port" aria-label="Borne du fil noir"><option value="none">—</option><option value="com">COM</option><option value="vohm">VΩ</option><option value="ma">mA</option></select></label>
+              <label>Fil rouge<select id="red-port" aria-label="Borne du fil rouge"><option value="none">—</option><option value="com">COM</option><option value="vohm">VΩ</option><option value="ma">mA</option></select></label>
+            </div>
+            <button id="power" class="power" type="button" disabled>Allumer le multimètre</button>
+          </div>
+
+          <span class="operator" aria-hidden="true">≤</span>
+          <label class="bound-field" id="high-field">
+            <span>Borne haute</span>
+            <span class="input-row">
+              <input id="high-value" type="text" inputmode="decimal" autocomplete="off" aria-describedby="high-feedback">
+              <select id="high-unit" aria-label="Unité de la borne haute">
+                <option value="ohm">Ω</option><option value="kohm">kΩ</option><option value="mohm">MΩ</option>
+              </select>
+            </span>
+            <small id="high-feedback">À calculer</small>
+          </label>
+        </div>
+      </div>
+
+      <aside class="check-card" aria-labelledby="check-title">
+        <p class="step-number">ÉTAPE 3</p>
+        <h2 id="check-title">Autorisation de mesure</h2>
+        <ul class="checklist">
+          <li id="check-low"><span>1</span>Borne basse exacte</li>
+          <li id="check-high"><span>2</span>Borne haute exacte</li>
+          <li id="check-leads"><span>3</span>COM et VΩ raccordés</li>
+          <li id="check-dial"><span>4</span>Fonction ohmmètre</li>
+        </ul>
+        <p id="authorization" class="authorization">Complète les quatre contrôles pour autoriser l’allumage.</p>
+        <button id="next-challenge" class="primary" type="button" hidden>Résistance suivante</button>
+      </aside>
+    </section>
+
+    <section class="colour-reference" aria-labelledby="colour-title">
+      <div class="reference-heading">
+        <div><p class="eyebrow">AIDE-MÉMOIRE</p><h2 id="colour-title">Code des couleurs</h2></div>
+        <p>Les deux premiers anneaux donnent les chiffres, le troisième le multiplicateur.</p>
+      </div>
+      <div id="colour-table" class="colour-table"></div>
+      <div class="tolerance-key"><span><i data-colour="gold"></i>Or · ±5 %</span><span><i data-colour="silver"></i>Argent · ±10 %</span></div>
+    </section>
+  </main>
+
+  <div id="challenge-panel" class="challenge-panel" hidden>
+    <div>
+      <p class="eyebrow">MODE DÉFI</p>
+      <strong>5 résistances · aucune aide · temps départageant</strong>
+    </div>
+    <button id="start-challenge" class="primary" type="button">Démarrer le défi</button>
+  </div>
+
+  <div id="result-dialog" class="dialog-backdrop" hidden>
+    <section class="result-dialog" role="dialog" aria-modal="true" aria-labelledby="result-title">
+      <p class="eyebrow">DÉFI TERMINÉ</p>
+      <h2 id="result-title">Contrôle terminé</h2>
+      <p id="final-score"></p>
+      <button id="restart-challenge" class="primary" type="button">Recommencer</button>
+    </section>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
