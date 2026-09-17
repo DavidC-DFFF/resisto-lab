@@ -73,6 +73,13 @@
         <span class="lead"></span>
       </div>
       <p class="sr-only" id="band-description"></p>
+      <section class="colour-reference" aria-labelledby="colour-title">
+        <div class="reference-heading">
+          <h2 id="colour-title">Code des couleurs</h2>
+          <p>Chiffre · multiplicateur · tolérance</p>
+        </div>
+        <div id="colour-table" class="colour-table"></div>
+      </section>
     </section>
 
     <section class="lab-grid">
@@ -158,25 +165,17 @@
         </ul>
         <p id="authorization" class="authorization">Complète les quatre contrôles pour autoriser l’allumage.</p>
         <button id="validate-answers" class="primary" type="button" hidden>Contrôler mes réponses</button>
+        <button id="abandon-resistance" class="abandon-button" type="button" hidden>Abandonner cette résistance</button>
         <p id="item-score" class="item-score" hidden></p>
         <button id="next-challenge" class="primary" type="button" hidden>Résistance suivante</button>
       </aside>
-    </section>
-
-    <section class="colour-reference" aria-labelledby="colour-title">
-      <div class="reference-heading">
-        <div><p class="eyebrow">AIDE-MÉMOIRE</p><h2 id="colour-title">Code des couleurs</h2></div>
-        <p>Les deux premiers anneaux donnent les chiffres, le troisième le multiplicateur.</p>
-      </div>
-      <div id="colour-table" class="colour-table"></div>
-      <div class="tolerance-key"><span><i data-colour="gold"></i>Or · ±5 %</span><span><i data-colour="silver"></i>Argent · ±10 %</span></div>
     </section>
   </main>
 
   <div id="challenge-panel" class="challenge-panel" hidden>
     <div>
       <p class="eyebrow">MODE DÉFI</p>
-      <strong>5 résistances distinctes · 2 à ±10 %, puis 3 à ±5 % · note sur 20</strong>
+      <strong>4 résistances distinctes · 2 à ±10 %, puis 2 à ±5 % · 5 points chacune</strong>
     </div>
     <button id="start-challenge" class="primary" type="button">Démarrer le défi</button>
   </div>

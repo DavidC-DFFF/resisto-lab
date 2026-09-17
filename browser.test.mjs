@@ -67,11 +67,16 @@ try {
   assert.equal(await standalonePage.locator('#score-badge').innerText(), 'Essai libre');
   assert.equal(await standalonePage.locator('#nominal-value').isVisible(), true);
   await standalonePage.locator('[data-mode="competition"]').click();
-  assert.match(await standalonePage.locator('#challenge-panel').innerText(), /note sur 20/);
+  assert.match(await standalonePage.locator('#challenge-panel').innerText(), /5 points chacune/);
   await standalonePage.locator('#start-challenge').click();
   assert.match(await standalonePage.locator('#score-badge').innerText(), /0\/20/);
-  assert.equal(await standalonePage.locator('#resistor-progress').innerText(), 'Résistance 1/5');
+  assert.equal(await standalonePage.locator('#resistor-progress').innerText(), 'Résistance 1/4');
   assert.equal(await standalonePage.locator('#validate-answers').isDisabled(), true);
+  assert.equal(await standalonePage.locator('.colour-cell').count(), 12);
+  standalonePage.once('dialog', dialog => dialog.accept());
+  await standalonePage.locator('#abandon-resistance').click();
+  assert.match(await standalonePage.locator('#item-score').innerText(), /0\/5/);
+  assert.equal(await standalonePage.locator('#power').isEnabled(), true);
   await standalonePage.close();
 
   const page = await browser.newPage();
@@ -88,44 +93,47 @@ try {
 
   await page.goto(baseUrl);
   assert.equal(await page.locator('body').getAttribute('class'), 'scorm-mode');
-  assert.match(await page.locator('#challenge-panel').innerText(), /note sur 20/);
-  await page.locator('#start-challenge').click();
+  assert.equal(await page.locator('.topbar').isVisible(), false);
+  assert.equal(await page.locator('.briefing').isVisible(), false);
+  assert.equal(await page.locator('#challenge-panel').isVisible(), false);
 
   const firstBands = await page.locator('#band-description').textContent();
   const observedNominals = new Set([decodeBands(firstBands).nominal]);
-  assert.equal(await page.locator('#resistor-progress').innerText(), 'Résistance 1/5');
+  assert.equal(await page.locator('#resistor-progress').innerText(), 'Résistance 1/4');
   assert.equal(await page.locator('#tolerance-name').innerText(), 'argent');
   await fillAnswers(page, {nominal: 1, low: 1, high: 1});
   await page.locator('#validate-answers').click();
-  assert.match(await page.locator('#item-score').innerText(), /1\/4/);
+  assert.match(await page.locator('#item-score').innerText(), /1\/5/);
   assert.match(await page.locator('#score-badge').innerText(), /1\/20/);
 
   await fillAnswers(page, decodeBands(firstBands));
   assert.equal(await page.locator('#power').isEnabled(), true);
   await page.locator('#power').click();
+  assert.match(await page.locator('#item-score').innerText(), /2\/5/);
+  assert.match(await page.locator('#score-badge').innerText(), /2\/20/);
   assert.equal(await page.locator('#next-challenge').isVisible(), true);
 
   await page.reload();
   assert.equal(await page.locator('#band-description').textContent(), firstBands);
-  assert.match(await page.locator('#item-score').innerText(), /1\/4/);
-  assert.match(await page.locator('#score-badge').innerText(), /1\/20/);
+  assert.match(await page.locator('#item-score').innerText(), /2\/5/);
+  assert.match(await page.locator('#score-badge').innerText(), /2\/20/);
   assert.equal(await page.locator('#next-challenge').isVisible(), true);
-  assert.equal(await page.locator('#resistor-progress').innerText(), 'Résistance 1/5');
+  assert.equal(await page.locator('#resistor-progress').innerText(), 'Résistance 1/4');
 
   await page.locator('#next-challenge').click();
-  for (let index = 1; index < 5; index += 1) {
+  for (let index = 1; index < 4; index += 1) {
     const bands = await page.locator('#band-description').textContent();
     observedNominals.add(decodeBands(bands).nominal);
-    assert.equal(await page.locator('#resistor-progress').innerText(), `Résistance ${index + 1}/5`);
+    assert.equal(await page.locator('#resistor-progress').innerText(), `Résistance ${index + 1}/4`);
     assert.equal(await page.locator('#tolerance-name').innerText(), index < 2 ? 'argent' : 'or');
     await fillAnswers(page, decodeBands(bands));
     await page.locator('#validate-answers').click();
-    assert.match(await page.locator('#item-score').innerText(), /4\/4/);
+    assert.match(await page.locator('#item-score').innerText(), /5\/5/);
     await page.locator('#power').click();
     await page.locator('#next-challenge').click();
   }
 
-  assert.equal(observedNominals.size, 5);
+  assert.equal(observedNominals.size, 4);
 
   assert.equal(await page.locator('#result-dialog').isVisible(), true);
   assert.match(await page.locator('#final-score').innerText(), /17\/20/);

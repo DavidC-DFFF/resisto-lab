@@ -11,9 +11,9 @@ import {
 } from './core.js';
 import {connectScorm} from './scorm.js';
 
-const CHALLENGE_LENGTH = 5;
-const CHALLENGE_SERIES = ['E12', 'E12', 'E24', 'E24', 'E24'];
-const STATE_VERSION = 2;
+const CHALLENGE_LENGTH = 4;
+const CHALLENGE_SERIES = ['E12', 'E12', 'E24', 'E24'];
+const STATE_VERSION = 3;
 const scorm = connectScorm(window);
 
 const elements = {
@@ -45,6 +45,7 @@ const elements = {
   power: document.querySelector('#power'),
   authorization: document.querySelector('#authorization'),
   validateAnswers: document.querySelector('#validate-answers'),
+  abandonResistance: document.querySelector('#abandon-resistance'),
   itemScore: document.querySelector('#item-score'),
   nextChallenge: document.querySelector('#next-challenge'),
   hintButton: document.querySelector('#hint-button'),
@@ -234,8 +235,11 @@ function resetControls(saved = null, savedMeasured = false) {
   const assessment = assessments[challengeIndex];
   elements.itemScore.hidden = !assessment;
   elements.itemScore.textContent = assessment
-    ? `${assessment.points}/4 points acquis sur cette résistance.`
+    ? assessment.abandoned
+      ? `${assessment.points}/5 point${assessment.points === 1 ? '' : 's'} acquis · réponses révélées.`
+      : `${assessment.points}/5 point${assessment.points === 1 ? '' : 's'} acquis sur cette résistance.`
     : '';
+  elements.abandonResistance.hidden = mode !== 'competition' || !challengeRunning || measured;
   refreshAuthorization();
 }
 
@@ -324,24 +328,88 @@ function assessCurrentResistance() {
   if (!state.complete) return;
 
   const result = evaluateChallengeItems(challenge, state.submission);
-  assessments[challengeIndex] = result;
-  challengeScore += result.points;
+  const points = result.points === 4 ? 5 : result.points;
+  assessments[challengeIndex] = {
+    ...result,
+    initialPoints: result.points,
+    points,
+    correctionAwarded: result.points === 4,
+    abandoned: false
+  };
+  challengeScore += points;
   currentAssessed = true;
   elements.itemScore.hidden = false;
-  elements.itemScore.textContent = `${result.points}/4 points acquis sur cette résistance.`;
+  elements.itemScore.textContent = result.points === 4
+    ? '5/5 points acquis sur cette résistance.'
+    : `${points}/5 point${points === 1 ? '' : 's'} provisoire${points === 1 ? '' : 's'} · corrige pour gagner le point de correction.`;
+  elements.abandonResistance.hidden = result.points === 4;
   refreshAuthorization();
   updateScoreBadge();
   persistAttempt();
 }
 
 function completeMeasurement() {
+  const assessment = assessments[challengeIndex];
+  if (assessment && !assessment.abandoned && !assessment.correctionAwarded) {
+    assessment.correctionAwarded = true;
+    assessment.points += 1;
+    challengeScore += 1;
+    elements.itemScore.hidden = false;
+    elements.itemScore.textContent = `${assessment.points}/5 point${assessment.points === 1 ? '' : 's'} acquis, correction comprise.`;
+    updateScoreBadge();
+  }
   showMeasurement();
   measured = true;
+  elements.abandonResistance.hidden = true;
   refreshAuthorization();
   elements.nextChallenge.hidden = false;
   elements.nextChallenge.textContent = challengeRunning && challengeIndex === CHALLENGE_LENGTH - 1
     ? 'Voir le résultat'
     : 'Résistance suivante';
+  persistAttempt();
+}
+
+function setAnswer(valueElement, unitElement, ohms) {
+  const unit = preferredUnit(ohms);
+  const factor = {ohm: 1, kohm: 1_000, mohm: 1_000_000}[unit];
+  valueElement.value = String(ohms / factor);
+  unitElement.value = unit;
+}
+
+function abandonCurrentResistance() {
+  if (!challengeRunning || measured) return;
+  const confirmed = window.confirm(
+    'Afficher toutes les bonnes réponses ? Le point de correction ne pourra plus être obtenu.'
+  );
+  if (!confirmed) return;
+
+  if (!currentAssessed) {
+    assessments[challengeIndex] = {
+      nominal: false,
+      low: false,
+      high: false,
+      meter: false,
+      initialPoints: 0,
+      points: 0,
+      correctionAwarded: false,
+      abandoned: true
+    };
+    currentAssessed = true;
+  } else {
+    assessments[challengeIndex].abandoned = true;
+  }
+
+  setAnswer(elements.nominalValue, elements.nominalUnit, challenge.nominal);
+  setAnswer(elements.lowValue, elements.lowUnit, challenge.low);
+  setAnswer(elements.highValue, elements.highUnit, challenge.high);
+  elements.blackPort.value = 'com';
+  elements.redPort.value = 'vohm';
+  elements.dial.value = 'ohm';
+  elements.itemScore.hidden = false;
+  elements.itemScore.textContent = `${assessments[challengeIndex].points}/5 point${assessments[challengeIndex].points === 1 ? '' : 's'} acquis · réponses révélées.`;
+  elements.abandonResistance.hidden = true;
+  refreshAuthorization();
+  updateScoreBadge();
   persistAttempt();
 }
 
@@ -402,14 +470,24 @@ function restoreAttempt(state) {
 }
 
 function buildColourTable() {
-  elements.colourTable.innerHTML = digitColours.map(colour => `
+  const digits = digitColours.map(colour => `
     <div class="colour-cell">
       <i data-colour="${colour.css}" aria-hidden="true"></i>
       <span>${colour.name}</span>
-      <strong>${colour.value}</strong>
-      <small>×10<sup>${colour.value}</sup></small>
+      <strong>${colour.value} · ×10<sup>${colour.value}</sup></strong>
     </div>
-  `).join('');
+  `);
+  const tolerances = [
+    {name: 'Or', css: 'gold', value: '±5 %'},
+    {name: 'Argent', css: 'silver', value: '±10 %'}
+  ].map(colour => `
+    <div class="colour-cell tolerance-cell">
+      <i data-colour="${colour.css}" aria-hidden="true"></i>
+      <span>${colour.name}</span>
+      <strong>${colour.value}</strong>
+    </div>
+  `);
+  elements.colourTable.innerHTML = [...digits, ...tolerances].join('');
 }
 
 function initialize() {
@@ -431,15 +509,16 @@ function initialize() {
     return;
   }
 
-  challenge = createChallenge(elements.level.value);
-  renderChallenge();
-  elements.challengePanel.hidden = false;
-  elements.scoreBadge.textContent = completed ? `${scorm.score()}/20` : 'Prêt à démarrer';
-
   if (completed) {
+    challenge = createChallenge(elements.level.value);
+    renderChallenge();
     elements.finalScore.textContent = `Note déjà enregistrée dans Moodle : ${scorm.score()}/20.`;
     elements.resultDialog.hidden = false;
+    elements.scoreBadge.textContent = `${scorm.score()}/20`;
+    return;
   }
+
+  startCompetition();
 }
 
 const answerElements = [
@@ -462,6 +541,7 @@ const answerElements = [
 });
 
 elements.validateAnswers.addEventListener('click', assessCurrentResistance);
+elements.abandonResistance.addEventListener('click', abandonCurrentResistance);
 elements.power.addEventListener('click', completeMeasurement);
 elements.newResistor.addEventListener('click', nextTrainingResistance);
 elements.level.addEventListener('change', nextTrainingResistance);

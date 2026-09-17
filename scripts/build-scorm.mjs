@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const projectDirectory = path.resolve(scriptDirectory, '..');
-const destination = path.join(projectDirectory, 'dist-scorm');
+const destination = path.join(projectDirectory, 'dist-scorm-v3');
 const files = [
   'imsmanifest.xml',
   'index.html',

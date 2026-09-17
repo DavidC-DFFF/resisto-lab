@@ -24,9 +24,10 @@ Le site est entièrement statique et peut être publié directement avec GitHub 
 
 RésistoLab détecte automatiquement l’API SCORM 1.2 lorsqu’il est lancé depuis Moodle. Dans ce contexte, le défi :
 
-- enregistre les cinq résistances tirées et la progression dans `cmi.suspend_data` ;
+- démarre directement et enregistre les quatre résistances tirées dans `cmi.suspend_data` ;
 - reprend la même tentative après une actualisation ;
-- évalue quatre items par résistance, soit une note sur 20 ;
+- évalue quatre réponses au premier contrôle et un point de correction par résistance, soit une note sur 20 ;
+- permet d’abandonner une résistance pour révéler les réponses et poursuivre sans point de correction ;
 - transmet la note à Moodle avec `cmi.core.score.raw` ;
 - désactive le bouton permettant de recommencer après la fin du défi.
 
@@ -34,7 +35,7 @@ Préparer le paquet :
 
 ```powershell
 npm run scorm:stage
-Compress-Archive -Path .\dist-scorm\* -DestinationPath .\resistolab-defi-scorm.zip -Force
+Compress-Archive -Path .\dist-scorm-v3\* -DestinationPath .\resistolab-defi-scorm-v3.zip -Force
 ```
 
 Dans Moodle, ajouter une activité **Paquetage SCORM**, téléverser le ZIP, fixer la note maximale et le nombre maximal de tentatives à `20` et `1`, puis activer le verrouillage après la dernière tentative.

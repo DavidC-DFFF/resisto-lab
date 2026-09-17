@@ -14,9 +14,10 @@ Mobiliser les pourcentages pour contrôler une résistance neuve : décoder sa v
 - Le multimètre ne peut être allumé que lorsque les deux bornes sont exactes.
 - Les fils doivent être raccordés à COM et VΩ et le sélecteur placé sur Ω.
 - Le mode entraînement propose les séries E12 à 10 % et E24 à 5 %.
-- Le mode défi comporte cinq résistances et quatre items évalués par résistance : valeur nominale, borne basse, borne haute et configuration complète du multimètre.
+- Le mode défi comporte quatre résistances et cinq points par résistance : quatre items évalués au premier contrôle, puis un point de correction si les erreurs sont rectifiées sans abandon.
 - Le défi est noté sur 20 sans chronomètre ni départage au temps.
-- Dans Moodle, la première validation de chaque résistance fixe les points ; les corrections restent ensuite nécessaires pour autoriser la mesure.
+- Dans Moodle, le défi démarre directement. La première validation fixe les quatre points de réponse ; une correction complète rapporte le cinquième point et reste nécessaire pour autoriser la mesure.
+- L’abandon révèle les réponses pour permettre de poursuivre, mais ne rapporte pas le point de correction.
 - L’outil ne doit jamais laisser entendre qu’une résistance neuve normale est hors tolérance.
 
 ## Direction visuelle
