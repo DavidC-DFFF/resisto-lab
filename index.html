@@ -57,7 +57,10 @@
           <p class="step-number">ÉTAPE 1</p>
           <h2 id="resistor-title">Identifier la résistance</h2>
         </div>
-        <p class="tolerance-label">Anneau de tolérance&nbsp;: <strong id="tolerance-name">argent</strong></p>
+        <div class="resistor-meta">
+          <p id="resistor-progress" class="progress-badge" hidden>Résistance 1/5</p>
+          <p class="tolerance-label">Anneau de tolérance&nbsp;: <strong id="tolerance-name">argent</strong></p>
+        </div>
       </div>
       <div class="resistor-stage" role="img" aria-label="Résistance à décoder">
         <span class="lead"></span>
@@ -173,7 +176,7 @@
   <div id="challenge-panel" class="challenge-panel" hidden>
     <div>
       <p class="eyebrow">MODE DÉFI</p>
-      <strong>5 résistances · 4 critères chacune · note sur 20</strong>
+      <strong>5 résistances distinctes · 2 à ±10 %, puis 3 à ±5 % · note sur 20</strong>
     </div>
     <button id="start-challenge" class="primary" type="button">Démarrer le défi</button>
   </div>

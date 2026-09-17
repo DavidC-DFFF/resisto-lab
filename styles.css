@@ -65,6 +65,8 @@ button { min-height: 2.8rem; border-radius: .55rem; font-weight: 800; }
 .resistor-card { padding: 1.3rem clamp(1rem, 3vw, 2rem) 1.6rem; border-radius: 1rem; }
 .card-heading, .reference-heading { display: flex; align-items: start; justify-content: space-between; gap: 1.25rem; }
 .card-heading h2, .reference-heading h2, .check-card h2 { margin: 0; font-size: 1.12rem; }
+.resistor-meta { display: grid; justify-items: end; gap: .35rem; }
+.progress-badge { margin: 0; padding: .28rem .6rem; border-radius: 999px; background: var(--navy); color: white; font-size: .78rem; font-weight: 850; }
 .tolerance-label { margin: .15rem 0 0; color: var(--muted); font-size: .85rem; }
 .resistor-stage { display: flex; align-items: center; justify-content: center; margin: 1.2rem auto 0; min-height: 7rem; }
 .lead {
@@ -209,6 +211,7 @@ button { min-height: 2.8rem; border-radius: .55rem; font-weight: 800; }
   .inequality > .operator:last-of-type { grid-row: 1; }
   .colour-table { grid-template-columns: repeat(2, 1fr); }
   .reference-heading { flex-direction: column; }
+  .resistor-meta { justify-items: start; }
   .challenge-panel { align-items: stretch; flex-direction: column; }
 }
 

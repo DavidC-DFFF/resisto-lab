@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {
   approximatelyEqual,
   createChallenge,
+  createChallengeSequence,
   decodeResistance,
   evaluateChallengeItems,
   formatResistance,
@@ -28,6 +29,10 @@ assert.equal(challenge.nominal, 10);
 assert.equal(challenge.low, 9);
 assert.equal(challenge.high, 11);
 assert.equal(challenge.measurement, 9);
+
+const sequence = createChallengeSequence(['E12', 'E12', 'E24', 'E24', 'E24'], () => 0);
+assert.deepEqual(sequence.map(item => item.tolerance), [10, 10, 5, 5, 5]);
+assert.equal(new Set(sequence.map(item => item.nominal)).size, 5);
 assert.deepEqual(measurementDisplay(2_180), {value: 2.18, unit: 'kΩ'});
 
 assert.deepEqual(evaluateChallengeItems(challenge, {

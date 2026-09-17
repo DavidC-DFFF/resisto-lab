@@ -70,6 +70,7 @@ try {
   assert.match(await standalonePage.locator('#challenge-panel').innerText(), /note sur 20/);
   await standalonePage.locator('#start-challenge').click();
   assert.match(await standalonePage.locator('#score-badge').innerText(), /0\/20/);
+  assert.equal(await standalonePage.locator('#resistor-progress').innerText(), 'Résistance 1/5');
   assert.equal(await standalonePage.locator('#validate-answers').isDisabled(), true);
   await standalonePage.close();
 
@@ -91,6 +92,9 @@ try {
   await page.locator('#start-challenge').click();
 
   const firstBands = await page.locator('#band-description').textContent();
+  const observedNominals = new Set([decodeBands(firstBands).nominal]);
+  assert.equal(await page.locator('#resistor-progress').innerText(), 'Résistance 1/5');
+  assert.equal(await page.locator('#tolerance-name').innerText(), 'argent');
   await fillAnswers(page, {nominal: 1, low: 1, high: 1});
   await page.locator('#validate-answers').click();
   assert.match(await page.locator('#item-score').innerText(), /1\/4/);
@@ -106,16 +110,22 @@ try {
   assert.match(await page.locator('#item-score').innerText(), /1\/4/);
   assert.match(await page.locator('#score-badge').innerText(), /1\/20/);
   assert.equal(await page.locator('#next-challenge').isVisible(), true);
+  assert.equal(await page.locator('#resistor-progress').innerText(), 'Résistance 1/5');
 
   await page.locator('#next-challenge').click();
   for (let index = 1; index < 5; index += 1) {
     const bands = await page.locator('#band-description').textContent();
+    observedNominals.add(decodeBands(bands).nominal);
+    assert.equal(await page.locator('#resistor-progress').innerText(), `Résistance ${index + 1}/5`);
+    assert.equal(await page.locator('#tolerance-name').innerText(), index < 2 ? 'argent' : 'or');
     await fillAnswers(page, decodeBands(bands));
     await page.locator('#validate-answers').click();
     assert.match(await page.locator('#item-score').innerText(), /4\/4/);
     await page.locator('#power').click();
     await page.locator('#next-challenge').click();
   }
+
+  assert.equal(observedNominals.size, 5);
 
   assert.equal(await page.locator('#result-dialog').isVisible(), true);
   assert.match(await page.locator('#final-score').innerText(), /17\/20/);

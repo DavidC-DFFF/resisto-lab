@@ -33,6 +33,8 @@ export const SERIES = {
   E24: {values: [10, 11, 12, 13, 15, 16, 18, 20, 22, 24, 27, 30, 33, 36, 39, 43, 47, 51, 56, 62, 68, 75, 82, 91], tolerance: 5, toleranceColour: 'gold'}
 };
 
+const DECADES = [1, 10, 100, 1_000, 10_000];
+
 export function decodeResistance(digits, multiplier) {
   return Number(digits.join('')) * multiplier;
 }
@@ -61,12 +63,8 @@ export function valueToBands(ohms, toleranceColour) {
   return [digitColours[digits[0]].css, digitColours[digits[1]].css, multiplier.css, toleranceColour];
 }
 
-export function createChallenge(seriesName, random = Math.random) {
+function challengeFromNominal(seriesName, nominal, random) {
   const series = SERIES[seriesName];
-  if (!series) throw new RangeError(`Série inconnue : ${seriesName}`);
-  const base = series.values[Math.floor(random() * series.values.length)];
-  const decade = [1, 10, 100, 1_000, 10_000][Math.floor(random() * 5)];
-  const nominal = base * decade;
   const {low, high} = toleranceBounds(nominal, series.tolerance);
   const measurement = low + random() * (high - low);
   return {
@@ -78,6 +76,36 @@ export function createChallenge(seriesName, random = Math.random) {
     measurement,
     bands: valueToBands(nominal, series.toleranceColour)
   };
+}
+
+function nominalCandidates(seriesName) {
+  const series = SERIES[seriesName];
+  if (!series) throw new RangeError(`Série inconnue : ${seriesName}`);
+  return series.values.flatMap(base => DECADES.map(decade => base * decade));
+}
+
+function randomItem(items, random) {
+  const index = Math.min(items.length - 1, Math.floor(random() * items.length));
+  return items[index];
+}
+
+export function createChallenge(seriesName, random = Math.random) {
+  const nominal = randomItem(nominalCandidates(seriesName), random);
+  return challengeFromNominal(seriesName, nominal, random);
+}
+
+export function createChallengeSequence(seriesNames, random = Math.random) {
+  const usedNominals = new Set();
+
+  return seriesNames.map(seriesName => {
+    const available = nominalCandidates(seriesName).filter(nominal => !usedNominals.has(nominal));
+    if (available.length === 0) {
+      throw new RangeError(`Plus aucune valeur distincte disponible pour la série ${seriesName}.`);
+    }
+    const nominal = randomItem(available, random);
+    usedNominals.add(nominal);
+    return challengeFromNominal(seriesName, nominal, random);
+  });
 }
 
 export function formatResistance(ohms, maximumFractionDigits = 3) {

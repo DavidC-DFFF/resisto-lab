@@ -2,6 +2,7 @@ import {
   SERIES,
   approximatelyEqual,
   createChallenge,
+  createChallengeSequence,
   digitColours,
   evaluateChallengeItems,
   measurementDisplay,
@@ -11,7 +12,8 @@ import {
 import {connectScorm} from './scorm.js';
 
 const CHALLENGE_LENGTH = 5;
-const STATE_VERSION = 1;
+const CHALLENGE_SERIES = ['E12', 'E12', 'E24', 'E24', 'E24'];
+const STATE_VERSION = 2;
 const scorm = connectScorm(window);
 
 const elements = {
@@ -22,6 +24,7 @@ const elements = {
   bands: [...document.querySelectorAll('.visual-band')],
   bandDescription: document.querySelector('#band-description'),
   toleranceName: document.querySelector('#tolerance-name'),
+  resistorProgress: document.querySelector('#resistor-progress'),
   nominalValue: document.querySelector('#nominal-value'),
   nominalUnit: document.querySelector('#nominal-unit'),
   nominalField: document.querySelector('#nominal-field'),
@@ -245,6 +248,8 @@ function renderChallenge(savedControls = null, savedMeasured = false) {
   elements.bandDescription.textContent = `Anneaux : ${names.join(', ')}.`;
   elements.toleranceName.textContent = challenge.tolerance === 10 ? 'argent' : 'or';
   elements.seriesBadge.textContent = `${challenge.series} · ±${challenge.tolerance} %`;
+  elements.resistorProgress.hidden = mode !== 'competition' || (!challengeRunning && challenges.length === 0);
+  elements.resistorProgress.textContent = `Résistance ${challengeIndex + 1}/${CHALLENGE_LENGTH}`;
   resetControls(savedControls, savedMeasured);
 }
 
@@ -291,7 +296,7 @@ function startCompetition() {
   challengeIndex = 0;
   challengeScore = 0;
   assessments = Array(CHALLENGE_LENGTH).fill(null);
-  challenges = Array.from({length: CHALLENGE_LENGTH}, () => createChallenge(elements.level.value));
+  challenges = createChallengeSequence(CHALLENGE_SERIES);
   challenge = challenges[0];
   elements.challengePanel.hidden = true;
   elements.level.disabled = true;
@@ -347,6 +352,7 @@ function applyMode(nextMode) {
   elements.hintButton.hidden = mode === 'competition';
   elements.hint.hidden = true;
   elements.newResistor.hidden = mode === 'competition';
+  elements.resistorProgress.hidden = mode !== 'competition' || challenges.length === 0;
 }
 
 function selectMode(nextMode) {
